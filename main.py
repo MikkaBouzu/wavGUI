@@ -1,16 +1,11 @@
 import os
 import soundfile as sf
-import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import PySimpleGUI as sg
 import matplotlib
+from wave_reader import read_wav, time_graph
 
 matplotlib.use("TkAgg")
-
-data, samplerate = sf.read('C:/Users/Sarah/Downloads/example.wav')
-
-fig = matplotlib.figure.Figure(figsize=(8, 4), dpi=100)
-fig.add_subplot(111).plot(data)
 
 
 def draw_figure(canvas, figure):
@@ -82,16 +77,16 @@ while True:
         window["-FILE LIST-"].update(fnames)
     elif event == "-FILE LIST-":  # A file was chosen from the listbox
         try:
+
             filename = os.path.join(
                 values["-FOLDER-"], values["-FILE LIST-"][0]
             )
-            window["-TIME_GRAPH-"].update(draw_figure(window["-TIME_GRAPH-"].TKCanvas, fig))
+            data, samplerate = read_wav(filename)
+            fig = time_graph(data)
+            draw_figure(window["-TIME_GRAPH-"].TKCanvas, fig)
+
 
         except:
             pass
 
 window.close()
-
-
-
-
