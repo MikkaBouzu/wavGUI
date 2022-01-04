@@ -1,5 +1,4 @@
 import os
-import soundfile as sf
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import PySimpleGUI as sg
 import matplotlib
