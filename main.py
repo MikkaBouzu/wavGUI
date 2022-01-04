@@ -3,6 +3,7 @@ import soundfile as sf
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import PySimpleGUI as sg
 import matplotlib
+import matplotlib.pyplot as plt
 from wave_reader import read_wav, time_graph
 
 matplotlib.use("TkAgg")
@@ -13,6 +14,11 @@ def draw_figure(canvas, figure):
     figure_canvas_agg.draw()
     figure_canvas_agg.get_tk_widget().pack(side="top", fill="both", expand=1)
     return figure_canvas_agg
+
+
+def delete_figure_agg(figure_agg):
+    figure_agg.get_tk_widget().forget()
+    plt.close('all')
 
 
 # Define the window layout
@@ -54,12 +60,18 @@ window = sg.Window(
     element_justification="center",
 )
 
+
+figure_agg = None
 # Add the plot to the window
 # Run the Event Loop
 while True:
     event, values = window.read()
     if event == "Exit" or event == sg.WIN_CLOSED:
         break
+    if figure_agg:
+        # ** IMPORTANT ** Clean up previous drawing before drawing again
+        delete_figure_agg(figure_agg)
+
     # Folder name was filled in, make a list of files in the folder
     if event == "-FOLDER-":
         folder = values["-FOLDER-"]
@@ -77,14 +89,12 @@ while True:
         window["-FILE LIST-"].update(fnames)
     elif event == "-FILE LIST-":  # A file was chosen from the listbox
         try:
-
             filename = os.path.join(
                 values["-FOLDER-"], values["-FILE LIST-"][0]
             )
             data, samplerate = read_wav(filename)
             fig = time_graph(data)
-            draw_figure(window["-TIME_GRAPH-"].TKCanvas, fig)
-
+            figure_agg = draw_figure(window['-TIME_GRAPH-'].TKCanvas, fig)
 
         except:
             pass
