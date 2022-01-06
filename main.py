@@ -3,12 +3,18 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import PySimpleGUI as sg
 import matplotlib
 import matplotlib.pyplot as plt
-from wave_reader import read_wav, time_graph
+from wave_reader import read_wav, time_graph, spectrum
 
 matplotlib.use("TkAgg")
 
 
 def draw_figure(canvas, figure):
+    """
+
+    :param canvas: Tkinter Canvas Object
+    :param figure:
+    :return: FigureCanvasTkAgg object
+    """
     figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
     figure_canvas_agg.draw()
     figure_canvas_agg.get_tk_widget().pack(side="top", fill="both", expand=1)
@@ -16,6 +22,11 @@ def draw_figure(canvas, figure):
 
 
 def delete_figure_agg(figure_agg):
+    """
+
+    :param figure_agg:
+    :return: None
+    """
     figure_agg.get_tk_widget().forget()
     plt.close('all')
 
@@ -60,16 +71,19 @@ window = sg.Window(
 )
 
 
-figure_agg = None
-# Add the plot to the window
+time_figure_agg = None
+spectrum_figure_agg = None
 # Run the Event Loop
 while True:
     event, values = window.read()
     if event == "Exit" or event == sg.WIN_CLOSED:
         break
-    if figure_agg:
+    if time_figure_agg: # if this already exists, delete it
         # ** IMPORTANT ** Clean up previous drawing before drawing again
-        delete_figure_agg(figure_agg)
+        delete_figure_agg(time_figure_agg)
+    if spectrum_figure_agg: # if this already exists, delete it
+        # ** IMPORTANT ** Clean up previous drawing before drawing again
+        delete_figure_agg(spectrum_figure_agg)
 
     # Folder name was filled in, make a list of files in the folder
     if event == "-FOLDER-":
@@ -79,6 +93,7 @@ while True:
             file_list = os.listdir(folder)
         except:
             file_list = []
+        # filter names that are files and end with .wav
         fnames = [
             f
             for f in file_list
@@ -88,12 +103,14 @@ while True:
         window["-FILE LIST-"].update(fnames)
     elif event == "-FILE LIST-":  # A file was chosen from the listbox
         try:
-            filename = os.path.join(
-                values["-FOLDER-"], values["-FILE LIST-"][0]
-            )
-            data, samplerate = read_wav(filename)
-            fig = time_graph(data)
-            figure_agg = draw_figure(window['-TIME_GRAPH-'].TKCanvas, fig)
+            filename = os.path.join(values["-FOLDER-"],
+                                    values["-FILE LIST-"][0])
+            samplerate, data = read_wav(filename)
+            time_fig = time_graph(data)
+            time_figure_agg = draw_figure(window['-TIME_GRAPH-'].TKCanvas, time_fig)
+
+            spectrum_fig = spectrum(data, samplerate)
+            spectrum_figure_agg = draw_figure(window['-SPECTRUM-'].TKCanvas, spectrum_fig)
 
         except:
             pass
