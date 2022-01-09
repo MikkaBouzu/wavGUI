@@ -106,7 +106,7 @@ while True:
             filename = os.path.join(values["-FOLDER-"],
                                     values["-FILE LIST-"][0])
             samplerate, data = read_wav(filename)
-            time_fig = time_graph(data)
+            time_fig = time_graph(data, samplerate)
             time_figure_agg = draw_figure(window['-TIME_GRAPH-'].TKCanvas, time_fig)
 
             spectrum_fig = spectrum(data, samplerate)

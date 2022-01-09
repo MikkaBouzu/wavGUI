@@ -17,19 +17,25 @@ def read_wav(path):
     return samplerate, data
 
 
-def time_graph(data):
+def time_graph(data, samplerate):
     """
     this function creates a plot
     :param data: np.array
     :return: matplotlib.figure.Figure object
     """
     fig = matplotlib.figure.Figure(figsize=(8, 4), dpi=100)
-    ax = fig.add_subplot(111)
+    ax = fig.add_subplot(111,
+                         xlabel='Time in s',
+                         ylabel='Amplitude')
+
+    samples_total = data.shape[0]
+    duration = samples_total/samplerate
+
     ax.plot(data, linewidth=0.5)
 
     # some beautification
     fig.tight_layout()
-    ax.grid(True)
+    ax.grid(True, which='both')
     return fig
 
 
@@ -43,10 +49,8 @@ def spectrum(data, samplerate):
     fig = matplotlib.figure.Figure(figsize=(8, 4), dpi=100)
     ax = fig.add_subplot(111,
                          xscale='log',
-                         # xlim=(10, 10e4),
                          xlabel='frequency in Hz',
                          ylabel='relative amplitude in dB')
-
     p_0 = 2e-5
     samples_total = data.shape[0]
 
@@ -54,21 +58,43 @@ def spectrum(data, samplerate):
     yf = rfft(data)
     yf = 20 * np.log10(yf/p_0) # convert to dB scale
 
-    # TODO: welches von den beiden ist "richtig"?
     ax.plot(xf, np.abs(yf), linewidth=0.5)
-    # ax.plot(np.abs(yf), linewidth=0.5)
 
     # some beautification
     fig.tight_layout()
-    ax.grid(True)
+    ax.set_xlim(left=10)
+    ax.grid(True, which='both')
+    return xf, yf, fig
+
+
+def a_weighing(xf, yf):
+    fig = matplotlib.figure.Figure(figsize=(8, 4), dpi=100)
+    ax = fig.add_subplot(111,
+                         xscale='log',
+                         xlabel='frequency in Hz',
+                         ylabel='relative amplitude in dB')
+    k_A = 7.39705e9 #Faktor, welcher die Übertragungsfunktionen auf den Verstärkungsfaktor 1 (0 dB) bei 1 kHz normieren
+    a_weighted = k_A * yf**4/((yf + 129.4)**2
+                              * (yf + 676.7)
+                              * (yf + 4636)
+                              * (yf + 76655)**2)
+    ax.plot(xf, a_weighted, linewidth=0.5)
+
+    # some beautification
+    fig.tight_layout()
+    ax.set_xlim(left=10)
+    ax.grid(True, which='both')
     return fig
 
 
 # if you execute this helper code you will save the graphs displayed in th GUI to your disk
 if __name__ == "__main__":
     samplerate, data = read_wav("C:/Users/Sarah/Downloads/example.wav")
-    fig = time_graph(data)
+    fig = time_graph(data, samplerate)
     fig.savefig("fig1.png")
 
-    spec = spectrum(data, samplerate)
+    xf, yf, spec = spectrum(data, samplerate)
     spec.savefig("fig2.png")
+
+    a_bewertung = a_weighing(xf, yf)
+    a_bewertung.savefig("fig3.png")
