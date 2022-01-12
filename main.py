@@ -12,7 +12,7 @@ matplotlib.use("TkAgg")
 
 def draw_figure(canvas, figure):
     """
-
+    this function draws figures to the GUI
     :param canvas: Tkinter Canvas Object
     :param figure:
     :return: FigureCanvasTkAgg object
@@ -25,7 +25,7 @@ def draw_figure(canvas, figure):
 
 def delete_figure_agg(figure_agg):
     """
-
+    this function deletes plots that have been drawn to the GUI
     :param figure_agg:
     :return: None
     """
@@ -33,7 +33,10 @@ def delete_figure_agg(figure_agg):
     plt.close('all')
 
 
-# Define the window layout
+#####################
+#   Define Layout   #
+#####################
+
 file_list_column = [
     [
         sg.Text("Image Folder"),
@@ -73,10 +76,11 @@ window = sg.Window(
     element_justification="center",
 )
 
-
+#####################
+#   Event Loop   #
+#####################
 time_figure_agg = None
 spectrum_figure_agg = None
-# Run the Event Loop
 while True:
     event, values = window.read()
     if event == "Exit" or event == sg.WIN_CLOSED:
@@ -105,19 +109,20 @@ while True:
         window["-FILE LIST-"].update(fnames)
     elif event == "-FILE LIST-":  # A file was chosen from the listbox
         try:
+            # get full file name and read the file
             filename = os.path.join(values["-FOLDER-"],
                                     values["-FILE LIST-"][0])
             samplerate, data = read_wav(filename)
+            # draw wave graph
             time_fig = time_graph(data, samplerate)
             time_figure_agg = draw_figure(window['-TIME_GRAPH-'].TKCanvas, time_fig)
-
+            # draw spectrum
             xf, yf, spectrum_fig = spectrum(data, samplerate)
             spectrum_figure_agg = draw_figure(window['-SPECTRUM-'].TKCanvas, spectrum_fig)
-
         except:
             pass
 
-    elif event == "-REDRAW-":
+    elif event == "-REDRAW-": # redraw plots with or without a-weighing
         try:
             time_figure_agg = draw_figure(window['-TIME_GRAPH-'].TKCanvas, time_fig)
             if values["-A_WEIGHING-"] == True:

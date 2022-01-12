@@ -84,6 +84,7 @@ def a_weighing(xf, yf):
                          xscale='log',
                          xlabel='frequency in Hz',
                          ylabel='relative amplitude in dB')
+    # perform A-weighing according to https://de.wikipedia.org/wiki/Frequenzbewertung
     k_A = 7.39705e9
     a_weighted = k_A * yf**4/((yf + 129.4)**2
                               * (yf + 676.7)
