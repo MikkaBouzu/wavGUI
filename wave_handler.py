@@ -1,7 +1,7 @@
 # Sarah Gritzka 2022
 
 import numpy as np
-import matplotlib
+from matplotlib.figure import Figure
 from matplotlib import pyplot as plt
 from scipy.io import wavfile
 from scipy.fft import rfft, rfftfreq
@@ -24,7 +24,7 @@ def time_graph(data, samplerate):
     :param samplerate: int
     :return: matplotlib.figure.Figure object
     """
-    fig = matplotlib.figure.Figure(figsize=(8, 4), dpi=100)
+    fig = Figure(figsize=(8, 4), dpi=100)
     ax = fig.add_subplot(111,
                          xlabel='Time in s',
                          ylabel='Amplitude')
@@ -44,14 +44,14 @@ def time_graph(data, samplerate):
 def spectrum(data, samplerate):
     """
     this function calculates an FFT over the whole sound file and returns a plot. It also returns the x and y data for
-    that plot so they can be reused later and only have to be calculated once.
+    that plot, so they can be reused later and only have to be calculated once.
     :param data: np.array
     :param samplerate: int
     :return:xf: np.array
             yf: np.array
             fig: matplotlib.figure.Figure object
     """
-    fig = matplotlib.figure.Figure(figsize=(8, 4), dpi=100)
+    fig = Figure(figsize=(8, 4), dpi=100)
     ax = fig.add_subplot(111,
                          xscale='log',
                          xlabel='frequency in Hz',
@@ -79,11 +79,12 @@ def a_weighing(xf, yf):
     :param yf: 
     :return: matplotlib.figure.Figure object
     """
-    fig = matplotlib.figure.Figure(figsize=(8, 4), dpi=100)
+    fig = Figure(figsize=(8, 4), dpi=100)
     ax = fig.add_subplot(111,
                          xscale='log',
                          xlabel='frequency in Hz',
                          ylabel='relative amplitude in dB')
+    # perform A-weighing according to https://de.wikipedia.org/wiki/Frequenzbewertung
     k_A = 7.39705e9
     a_weighted = k_A * yf**4/((yf + 129.4)**2
                               * (yf + 676.7)
