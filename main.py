@@ -1,9 +1,11 @@
+# Sarah Gritzka 2022
+
 import os
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import PySimpleGUI as sg
 import matplotlib
 import matplotlib.pyplot as plt
-from wave_reader import read_wav, time_graph, spectrum
+from wave_handler import read_wav, time_graph, spectrum, a_weighing
 
 matplotlib.use("TkAgg")
 
@@ -46,10 +48,11 @@ file_list_column = [
 ]
 
 wave_column = [
-    [sg.Text("Time Graph")],
+    [sg.Text("Time Graph", font=('Helvetica', 16))],
     [sg.Canvas(key="-TIME_GRAPH-")],
-    [sg.Text("Spectrogram")],
+    [sg.Text("Spectrogram", font=('Helvetica', 16))],
     [sg.Canvas(key="-SPECTRUM-")],
+    [sg.Checkbox("A-weighing", default=False, key="-A_WEIGHING-"), sg.Text("    "), sg.Button("Redraw", key="-REDRAW-")]
 ]
 
 # ----- Full layout -----
@@ -61,7 +64,7 @@ layout = [
     ]
 ]
 
-# Create the form and show it without the plot
+# Create the form and show it without the plots
 window = sg.Window(
     "WAV-File Viewer",
     layout,
@@ -78,11 +81,10 @@ while True:
     event, values = window.read()
     if event == "Exit" or event == sg.WIN_CLOSED:
         break
-    if time_figure_agg: # if this already exists, delete it
-        # ** IMPORTANT ** Clean up previous drawing before drawing again
+    # ** IMPORTANT ** Clean up previous drawings before drawing again
+    if time_figure_agg:
         delete_figure_agg(time_figure_agg)
-    if spectrum_figure_agg: # if this already exists, delete it
-        # ** IMPORTANT ** Clean up previous drawing before drawing again
+    if spectrum_figure_agg:
         delete_figure_agg(spectrum_figure_agg)
 
     # Folder name was filled in, make a list of files in the folder
@@ -109,10 +111,22 @@ while True:
             time_fig = time_graph(data, samplerate)
             time_figure_agg = draw_figure(window['-TIME_GRAPH-'].TKCanvas, time_fig)
 
-            spectrum_fig = spectrum(data, samplerate)
+            xf, yf, spectrum_fig = spectrum(data, samplerate)
             spectrum_figure_agg = draw_figure(window['-SPECTRUM-'].TKCanvas, spectrum_fig)
 
         except:
             pass
+
+    elif event == "-REDRAW-":
+        try:
+            time_figure_agg = draw_figure(window['-TIME_GRAPH-'].TKCanvas, time_fig)
+            if values["-A_WEIGHING-"] == True:
+                a_weighted_fig = a_weighing(xf, yf)
+                spectrum_figure_agg = draw_figure(window['-SPECTRUM-'].TKCanvas, a_weighted_fig)
+            else:
+                spectrum_figure_agg = draw_figure(window['-SPECTRUM-'].TKCanvas, spectrum_fig)
+        except:
+            pass
+
 
 window.close()

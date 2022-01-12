@@ -19,8 +19,9 @@ def read_wav(path):
 
 def time_graph(data, samplerate):
     """
-    this function creates a plot
+    this function creates a wave plot of the sound file
     :param data: np.array
+    :param samplerate: int
     :return: matplotlib.figure.Figure object
     """
     fig = matplotlib.figure.Figure(figsize=(8, 4), dpi=100)
@@ -28,12 +29,13 @@ def time_graph(data, samplerate):
                          xlabel='Time in s',
                          ylabel='Amplitude')
 
+    # rescale x axis to seconds
     samples_total = data.shape[0]
-    duration = samples_total/samplerate
+    x_scale = [x/samplerate for x in range(samples_total)]
 
-    ax.plot(data, linewidth=0.5)
+    ax.plot(x_scale, data, linewidth=0.5)
 
-    # some beautification
+    # some plot beautification
     fig.tight_layout()
     ax.grid(True, which='both')
     return fig
@@ -41,10 +43,13 @@ def time_graph(data, samplerate):
 
 def spectrum(data, samplerate):
     """
-
+    this function calculates an FFT over the whole sound file and returns a plot. It also returns the x and y data for
+    that plot so they can be reused later and only have to be calculated once.
     :param data: np.array
     :param samplerate: int
-    :return: matplotlib.figure.Figure object
+    :return:xf: np.array
+            yf: np.array
+            fig: matplotlib.figure.Figure object
     """
     fig = matplotlib.figure.Figure(figsize=(8, 4), dpi=100)
     ax = fig.add_subplot(111,
@@ -60,7 +65,7 @@ def spectrum(data, samplerate):
 
     ax.plot(xf, np.abs(yf), linewidth=0.5)
 
-    # some beautification
+    # some plot beautification
     fig.tight_layout()
     ax.set_xlim(left=10)
     ax.grid(True, which='both')
@@ -68,26 +73,32 @@ def spectrum(data, samplerate):
 
 
 def a_weighing(xf, yf):
+    """
+    This function calculates A-weighing according to https://de.wikipedia.org/wiki/Frequenzbewertung and returns a plot
+    :param xf: 
+    :param yf: 
+    :return: matplotlib.figure.Figure object
+    """
     fig = matplotlib.figure.Figure(figsize=(8, 4), dpi=100)
     ax = fig.add_subplot(111,
                          xscale='log',
                          xlabel='frequency in Hz',
                          ylabel='relative amplitude in dB')
-    k_A = 7.39705e9 #Faktor, welcher die Übertragungsfunktionen auf den Verstärkungsfaktor 1 (0 dB) bei 1 kHz normieren
+    k_A = 7.39705e9
     a_weighted = k_A * yf**4/((yf + 129.4)**2
                               * (yf + 676.7)
                               * (yf + 4636)
                               * (yf + 76655)**2)
-    ax.plot(xf, a_weighted, linewidth=0.5)
+    ax.plot(xf, abs(a_weighted), linewidth=0.5)
 
-    # some beautification
+    # some plot beautification
     fig.tight_layout()
     ax.set_xlim(left=10)
     ax.grid(True, which='both')
     return fig
 
 
-# if you execute this helper code you will save the graphs displayed in th GUI to your disk
+# if you execute this helper code you will save the graphs displayed in the GUI to your disk
 if __name__ == "__main__":
     samplerate, data = read_wav("C:/Users/Sarah/Downloads/example.wav")
     fig = time_graph(data, samplerate)
